@@ -13,6 +13,8 @@ O MarketGo foi desenvolvido para simular uma experiência real de compra por del
 - histórico de pedidos
 - integração com Supabase
 
+-SEM IMAGENS DO APP POR ENQUANTO
+
 ## Galeria do app
 
 ### Home
