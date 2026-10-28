@@ -2,11 +2,59 @@ import { products, stores } from '../data/mockData';
 import type { CartItem, Order, Product, Store } from '../types';
 import { supabase } from './supabase';
 
+function uniqueByKey<T>(items: T[], getKey: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = getKey(item).trim().toLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function normalizeStore(row: any): Store {
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category,
+    description: row.description ?? '',
+    rating: Number(row.rating ?? 0),
+    deliveryFee: Number(row.delivery_fee ?? 0),
+    etaMin: Number(row.eta_min ?? 0),
+    etaMax: Number(row.eta_max ?? 0),
+    minOrder: Number(row.min_order ?? 0),
+    isOpen: Boolean(row.is_open ?? true),
+    emoji: row.emoji ?? '🛒',
+  };
+}
+
+function normalizeProduct(row: any): Product {
+  return {
+    id: row.id,
+    storeId: row.store_id ?? row.storeId,
+    section: row.section,
+    name: row.name,
+    description: row.description ?? '',
+    price: Number(row.price ?? 0),
+    emoji: row.emoji ?? '🛒',
+    isActive: Boolean(row.is_active ?? row.isActive ?? true),
+  };
+}
+
 async function loadFromSupabase<T>(table: string): Promise<T[] | null> {
   if (!supabase) return null;
 
   const { data, error } = await supabase.from(table).select('*');
   if (error || !data) return null;
+
+  if (table === 'stores') {
+    return (data as any[]).map(normalizeStore) as T[];
+  }
+
+  if (table === 'products') {
+    return (data as any[]).map(normalizeProduct) as T[];
+  }
+
   return data as T[];
 }
 
@@ -27,12 +75,14 @@ export type CreateOrderInput = {
 export const marketgoService = {
   async getStores(): Promise<Store[]> {
     const remote = await loadFromSupabase<Store>('stores');
-    return remote ?? stores;
+    const list = remote && remote.length > 0 ? remote : stores;
+    return uniqueByKey(list, (store) => store.name);
   },
 
   async getProducts(): Promise<Product[]> {
     const remote = await loadFromSupabase<Product>('products');
-    return remote ?? products;
+    const list = remote && remote.length > 0 ? remote : products;
+    return uniqueByKey(list, (product) => `${product.storeId}:${product.name}`);
   },
 
   async getStoreById(storeId: string): Promise<Store | undefined> {
