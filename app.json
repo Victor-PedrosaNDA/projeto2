@@ -1,15 +1,20 @@
 {
   "expo": {
-    "name": "Projeto2",
-    "slug": "Projeto2",
+    "name": "MarketGo",
+    "slug": "marketgo",
+    "scheme": "marketgo",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.seuusuario.marketgo"
     },
     "android": {
+      "package": "com.seuusuario.marketgo",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
